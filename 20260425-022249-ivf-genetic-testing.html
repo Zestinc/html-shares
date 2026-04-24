@@ -1,0 +1,1428 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ECS × PGT-A × PGT-M｜生育基因检测的完整流程</title>
+<meta name="description" content="从备孕到胚胎移植：扩展性携带者筛查（ECS）、胚胎植入前染色体筛查（PGT-A）、胚胎植入前单基因病筛查（PGT-M）三者的分工与串联。">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;0,9..144,900;1,9..144,400&family=Noto+Serif+SC:wght@400;500;700;900&family=Noto+Sans+SC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  --bg: #F3EEE3;
+  --bg-card: #EAE3D3;
+  --bg-accent: #1A1A1A;
+  --ink: #171615;
+  --ink-soft: #4A453D;
+  --ink-faint: #7A7267;
+  --line: #C9BEA8;
+  --line-soft: #D9D0BC;
+  --accent: #8B2018;
+  --accent-2: #1F4231;
+  --accent-3: #B5791C;
+  --paper-shadow: 0 1px 0 rgba(23, 22, 21, 0.04);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: "Noto Sans SC", -apple-system, sans-serif;
+  font-size: 17px;
+  line-height: 1.75;
+  font-weight: 400;
+  letter-spacing: 0.01em;
+  overflow-x: hidden;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image:
+    radial-gradient(circle at 20% 30%, rgba(139, 32, 24, 0.03) 0%, transparent 50%),
+    radial-gradient(circle at 80% 70%, rgba(31, 66, 49, 0.03) 0%, transparent 50%);
+  pointer-events: none;
+  z-index: -1;
+}
+
+/* Paper grain overlay */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image:
+    repeating-linear-gradient(0deg, transparent 0, transparent 2px, rgba(23, 22, 21, 0.005) 2px, rgba(23, 22, 21, 0.005) 3px),
+    repeating-linear-gradient(90deg, transparent 0, transparent 2px, rgba(23, 22, 21, 0.005) 2px, rgba(23, 22, 21, 0.005) 3px);
+  pointer-events: none;
+  z-index: 1;
+  mix-blend-mode: multiply;
+  opacity: 0.5;
+}
+
+.container {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 0 28px;
+  position: relative;
+  z-index: 2;
+}
+
+.container-wide {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 28px;
+  position: relative;
+  z-index: 2;
+}
+
+/* ============ MASTHEAD ============ */
+.masthead {
+  padding: 48px 0 0;
+  border-bottom: 1px solid var(--line);
+  margin-bottom: 80px;
+}
+
+.masthead-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding-bottom: 24px;
+  border-bottom: 1px solid var(--line-soft);
+  margin-bottom: 64px;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+
+.masthead-top span:nth-child(2) {
+  color: var(--accent);
+}
+
+/* ============ HERO ============ */
+.hero {
+  padding: 40px 0 120px;
+  position: relative;
+}
+
+.hero-eyebrow {
+  font-family: "Fraunces", serif;
+  font-style: italic;
+  font-weight: 400;
+  font-size: 15px;
+  color: var(--accent);
+  letter-spacing: 0.05em;
+  margin-bottom: 32px;
+  display: inline-block;
+  padding-bottom: 4px;
+  border-bottom: 1px solid var(--accent);
+}
+
+.hero-title {
+  font-family: "Noto Serif SC", serif;
+  font-weight: 900;
+  font-size: clamp(42px, 6vw, 78px);
+  line-height: 1.02;
+  letter-spacing: -0.02em;
+  margin-bottom: 32px;
+  color: var(--ink);
+}
+
+.hero-title .initials {
+  font-family: "Fraunces", serif;
+  font-style: italic;
+  font-weight: 400;
+  color: var(--accent);
+  letter-spacing: -0.04em;
+}
+
+.hero-title .times {
+  font-family: "Fraunces", serif;
+  font-weight: 300;
+  color: var(--ink-faint);
+  font-style: normal;
+  margin: 0 0.15em;
+}
+
+.hero-subtitle {
+  font-family: "Fraunces", serif;
+  font-weight: 400;
+  font-style: italic;
+  font-size: clamp(20px, 2.4vw, 26px);
+  line-height: 1.45;
+  color: var(--ink-soft);
+  max-width: 680px;
+  margin-bottom: 48px;
+}
+
+.hero-meta {
+  display: flex;
+  gap: 32px;
+  flex-wrap: wrap;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+
+.hero-meta span {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.hero-meta span::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  background: var(--accent);
+  border-radius: 50%;
+}
+
+/* ============ TL;DR ============ */
+.tldr {
+  background: var(--ink);
+  color: var(--bg);
+  padding: 72px 0;
+  margin-bottom: 120px;
+  position: relative;
+}
+
+.tldr::before {
+  content: 'TL;DR';
+  position: absolute;
+  top: 28px;
+  right: calc(50% - 430px);
+  font-family: "Fraunces", serif;
+  font-style: italic;
+  font-weight: 300;
+  font-size: 80px;
+  color: rgba(245, 241, 234, 0.08);
+  letter-spacing: -0.03em;
+}
+
+.tldr-label {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--accent-3);
+  margin-bottom: 24px;
+}
+
+.tldr-body {
+  font-family: "Noto Serif SC", serif;
+  font-weight: 400;
+  font-size: clamp(18px, 2vw, 22px);
+  line-height: 1.75;
+  max-width: 720px;
+}
+
+.tldr-body strong {
+  color: var(--accent-3);
+  font-weight: 500;
+}
+
+/* ============ SECTION HEADERS ============ */
+.section {
+  margin-bottom: 96px;
+}
+
+.section-number {
+  font-family: "Fraunces", serif;
+  font-weight: 300;
+  font-size: 14px;
+  color: var(--accent);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.section-number::before {
+  content: '';
+  display: inline-block;
+  width: 40px;
+  height: 1px;
+  background: var(--accent);
+}
+
+.section-title {
+  font-family: "Noto Serif SC", serif;
+  font-weight: 700;
+  font-size: clamp(32px, 4vw, 46px);
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+  margin-bottom: 16px;
+  color: var(--ink);
+}
+
+.section-title .en {
+  font-family: "Fraunces", serif;
+  font-style: italic;
+  font-weight: 400;
+  font-size: 0.6em;
+  color: var(--ink-faint);
+  margin-left: 12px;
+  letter-spacing: 0;
+}
+
+.section-lead {
+  font-family: "Fraunces", serif;
+  font-weight: 400;
+  font-style: italic;
+  font-size: 19px;
+  line-height: 1.6;
+  color: var(--ink-soft);
+  max-width: 680px;
+  margin-bottom: 48px;
+  border-left: 2px solid var(--accent);
+  padding-left: 20px;
+}
+
+.section p {
+  margin-bottom: 22px;
+  color: var(--ink);
+  max-width: 720px;
+}
+
+.section p + p {
+  margin-top: -4px;
+}
+
+.section strong {
+  font-weight: 500;
+  color: var(--accent);
+}
+
+/* ============ COMPARISON TABLE ============ */
+.compare-wrap {
+  margin: 56px 0;
+  position: relative;
+}
+
+.compare-grid {
+  display: grid;
+  grid-template-columns: 160px 1fr 1fr 1fr;
+  gap: 0;
+  border-top: 2px solid var(--ink);
+  border-bottom: 2px solid var(--ink);
+}
+
+.compare-grid > div {
+  padding: 18px 16px;
+  border-bottom: 1px solid var(--line);
+  font-size: 14.5px;
+  line-height: 1.55;
+}
+
+.compare-grid > div:nth-last-child(-n+4) {
+  border-bottom: none;
+}
+
+.compare-header {
+  font-family: "Fraunces", serif;
+  font-weight: 600;
+  font-size: 15px !important;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  background: var(--ink);
+  color: var(--bg);
+  border-bottom: none !important;
+}
+
+.compare-header:first-child {
+  background: transparent;
+  color: transparent;
+}
+
+.compare-header.ecs { color: var(--accent-3); }
+.compare-header.pgta { color: var(--accent-3); }
+.compare-header.pgtm { color: var(--accent-3); }
+
+.compare-label {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 11px !important;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--ink-faint);
+  background: var(--bg-card);
+}
+
+/* ============ CARDS ============ */
+.concept-card {
+  background: var(--bg-card);
+  padding: 48px 44px;
+  margin-bottom: 48px;
+  position: relative;
+  border: 1px solid var(--line-soft);
+}
+
+.concept-card::before {
+  content: '';
+  position: absolute;
+  top: -1px;
+  left: -1px;
+  width: 60px;
+  height: 4px;
+  background: var(--accent);
+}
+
+.concept-card.pgta::before { background: var(--accent-2); }
+.concept-card.pgtm::before { background: var(--accent-3); }
+
+.concept-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 32px;
+  padding-bottom: 20px;
+  border-bottom: 1px dashed var(--line);
+}
+
+.concept-abbrev {
+  font-family: "Fraunces", serif;
+  font-style: italic;
+  font-weight: 400;
+  font-size: 56px;
+  line-height: 1;
+  color: var(--accent);
+  letter-spacing: -0.02em;
+}
+
+.concept-card.pgta .concept-abbrev { color: var(--accent-2); }
+.concept-card.pgtm .concept-abbrev { color: var(--accent-3); }
+
+.concept-meta {
+  text-align: right;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 11px;
+  color: var(--ink-faint);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.concept-meta div {
+  margin-bottom: 4px;
+}
+
+.concept-full {
+  font-family: "Noto Serif SC", serif;
+  font-weight: 700;
+  font-size: 24px;
+  margin: 8px 0 20px;
+  letter-spacing: -0.01em;
+}
+
+.concept-full-en {
+  font-family: "Fraunces", serif;
+  font-style: italic;
+  font-weight: 400;
+  color: var(--ink-faint);
+  font-size: 16px;
+  display: block;
+  margin-top: 4px;
+  letter-spacing: 0;
+}
+
+.concept-body {
+  font-size: 16px;
+  line-height: 1.8;
+}
+
+.concept-body p {
+  margin-bottom: 16px;
+}
+
+.kv-list {
+  margin: 24px 0;
+  border-top: 1px solid var(--line);
+}
+
+.kv-list dt {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 10.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--ink-faint);
+  padding: 14px 0 4px;
+  border-top: 1px solid var(--line-soft);
+}
+
+.kv-list dt:first-child {
+  border-top: none;
+  padding-top: 14px;
+}
+
+.kv-list dd {
+  padding-bottom: 14px;
+  font-size: 15.5px;
+  color: var(--ink);
+}
+
+/* ============ FLOW DIAGRAM ============ */
+.flow-section {
+  background: var(--ink);
+  color: var(--bg);
+  padding: 96px 0;
+  margin: 120px 0;
+  position: relative;
+  overflow: hidden;
+}
+
+.flow-section::before {
+  content: 'THE\AWORKFLOW';
+  white-space: pre;
+  position: absolute;
+  top: -20px;
+  right: -40px;
+  font-family: "Fraunces", serif;
+  font-style: italic;
+  font-weight: 300;
+  font-size: 200px;
+  line-height: 0.85;
+  color: rgba(245, 241, 234, 0.04);
+  letter-spacing: -0.04em;
+  pointer-events: none;
+}
+
+.flow-section .section-number {
+  color: var(--accent-3);
+}
+
+.flow-section .section-number::before {
+  background: var(--accent-3);
+}
+
+.flow-section .section-title {
+  color: var(--bg);
+}
+
+.flow-section .section-title .en {
+  color: rgba(245, 241, 234, 0.5);
+}
+
+.flow-section .section-lead {
+  color: rgba(245, 241, 234, 0.8);
+  border-left-color: var(--accent-3);
+}
+
+.flow-container {
+  margin-top: 64px;
+  position: relative;
+  z-index: 2;
+}
+
+.phase-label {
+  font-family: "Fraunces", serif;
+  font-style: italic;
+  font-weight: 400;
+  font-size: 18px;
+  color: var(--accent-3);
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.phase-label::before,
+.phase-label::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: rgba(245, 241, 234, 0.2);
+}
+
+.flow-node {
+  border: 1.5px solid rgba(245, 241, 234, 0.3);
+  padding: 24px 28px;
+  margin: 16px auto;
+  max-width: 560px;
+  position: relative;
+  background: rgba(245, 241, 234, 0.02);
+}
+
+.flow-node.primary {
+  border-color: var(--accent-3);
+  background: rgba(181, 121, 28, 0.08);
+}
+
+.flow-node-num {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 10.5px;
+  letter-spacing: 0.15em;
+  color: var(--accent-3);
+  margin-bottom: 6px;
+}
+
+.flow-node-title {
+  font-family: "Noto Serif SC", serif;
+  font-weight: 700;
+  font-size: 20px;
+  color: var(--bg);
+  margin-bottom: 6px;
+}
+
+.flow-node-title .en {
+  font-family: "Fraunces", serif;
+  font-style: italic;
+  font-weight: 400;
+  font-size: 14px;
+  color: rgba(245, 241, 234, 0.6);
+  margin-left: 8px;
+}
+
+.flow-node-desc {
+  font-size: 14.5px;
+  line-height: 1.6;
+  color: rgba(245, 241, 234, 0.75);
+}
+
+.flow-arrow {
+  text-align: center;
+  padding: 8px 0;
+  color: rgba(245, 241, 234, 0.4);
+  font-family: "JetBrains Mono", monospace;
+  font-size: 20px;
+  letter-spacing: 0.1em;
+}
+
+.flow-branch {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  max-width: 720px;
+  margin: 16px auto;
+}
+
+.flow-branch .flow-node {
+  max-width: 100%;
+  margin: 0;
+}
+
+.flow-branch-label {
+  font-family: "Fraunces", serif;
+  font-style: italic;
+  font-size: 14px;
+  color: var(--accent-3);
+  text-align: center;
+  margin: 4px 0 -4px;
+}
+
+.flow-merge {
+  text-align: center;
+  color: rgba(245, 241, 234, 0.5);
+  font-family: "JetBrains Mono", monospace;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  padding: 12px 0;
+}
+
+.flow-merge::before {
+  content: '⤵ ⤴';
+  display: block;
+  font-size: 18px;
+  margin-bottom: 8px;
+  color: rgba(245, 241, 234, 0.3);
+}
+
+/* ============ TIMELINE ============ */
+.timeline {
+  margin: 64px 0;
+}
+
+.timeline-row {
+  display: grid;
+  grid-template-columns: 140px 1fr;
+  gap: 32px;
+  padding: 24px 0;
+  border-top: 1px solid var(--line);
+}
+
+.timeline-row:last-child {
+  border-bottom: 1px solid var(--line);
+}
+
+.timeline-when {
+  font-family: "Fraunces", serif;
+  font-weight: 400;
+  font-style: italic;
+  font-size: 18px;
+  color: var(--accent);
+  line-height: 1.3;
+}
+
+.timeline-when span {
+  display: block;
+  font-family: "JetBrains Mono", monospace;
+  font-style: normal;
+  font-size: 10.5px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  margin-top: 4px;
+}
+
+.timeline-what {
+  font-size: 16px;
+  line-height: 1.7;
+  color: var(--ink);
+}
+
+.timeline-what strong {
+  display: block;
+  font-family: "Noto Serif SC", serif;
+  font-weight: 700;
+  font-size: 18px;
+  margin-bottom: 6px;
+  color: var(--ink);
+}
+
+/* ============ FAQ ============ */
+.faq-item {
+  padding: 28px 0;
+  border-top: 1px solid var(--line);
+}
+
+.faq-item:last-child {
+  border-bottom: 1px solid var(--line);
+}
+
+.faq-q {
+  font-family: "Noto Serif SC", serif;
+  font-weight: 700;
+  font-size: 20px;
+  line-height: 1.4;
+  margin-bottom: 12px;
+  color: var(--ink);
+  display: flex;
+  gap: 16px;
+  align-items: baseline;
+}
+
+.faq-q::before {
+  content: 'Q.';
+  font-family: "Fraunces", serif;
+  font-style: italic;
+  font-weight: 400;
+  color: var(--accent);
+  flex-shrink: 0;
+}
+
+.faq-a {
+  font-size: 15.5px;
+  line-height: 1.75;
+  color: var(--ink-soft);
+  padding-left: 32px;
+}
+
+.faq-a strong {
+  color: var(--accent);
+  font-weight: 500;
+}
+
+/* ============ PULL QUOTE ============ */
+.pullquote {
+  margin: 64px auto;
+  max-width: 720px;
+  text-align: center;
+  padding: 32px 0;
+  border-top: 1px solid var(--ink);
+  border-bottom: 1px solid var(--ink);
+  position: relative;
+}
+
+.pullquote::before {
+  content: '"';
+  position: absolute;
+  top: -28px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--bg);
+  padding: 0 16px;
+  font-family: "Fraunces", serif;
+  font-size: 80px;
+  color: var(--accent);
+  line-height: 1;
+  font-weight: 300;
+}
+
+.pullquote-text {
+  font-family: "Fraunces", serif;
+  font-weight: 400;
+  font-style: italic;
+  font-size: 26px;
+  line-height: 1.5;
+  color: var(--ink);
+}
+
+/* ============ FOOTER ============ */
+.footer {
+  margin-top: 120px;
+  padding: 56px 0 64px;
+  border-top: 2px solid var(--ink);
+  font-family: "JetBrains Mono", monospace;
+  font-size: 11px;
+  line-height: 1.8;
+  color: var(--ink-faint);
+  letter-spacing: 0.05em;
+}
+
+.footer-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr;
+  gap: 40px;
+  margin-bottom: 40px;
+}
+
+.footer-grid h4 {
+  font-family: "Fraunces", serif;
+  font-weight: 600;
+  font-style: italic;
+  font-size: 13px;
+  color: var(--ink);
+  margin-bottom: 12px;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.footer-disclaimer {
+  font-family: "Noto Sans SC", sans-serif;
+  font-size: 12.5px;
+  line-height: 1.7;
+  color: var(--ink-faint);
+  letter-spacing: 0;
+}
+
+.footer-bottom {
+  padding-top: 28px;
+  border-top: 1px solid var(--line-soft);
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+  text-transform: uppercase;
+}
+
+.footer-bottom span:last-child {
+  color: var(--accent);
+}
+
+/* ============ RESPONSIVE ============ */
+@media (max-width: 780px) {
+  body { font-size: 16px; }
+  .hero { padding: 24px 0 80px; }
+  .masthead { margin-bottom: 56px; }
+  .tldr { padding: 48px 0; margin-bottom: 80px; }
+  .tldr::before { display: none; }
+  .section { margin-bottom: 64px; }
+  .concept-card { padding: 32px 24px; }
+  .concept-card-header { flex-direction: column; gap: 16px; align-items: flex-start; }
+  .concept-meta { text-align: left; }
+  .concept-abbrev { font-size: 44px; }
+  .compare-grid {
+    grid-template-columns: 1fr;
+    border-bottom: 2px solid var(--ink);
+  }
+  .compare-grid > div {
+    border-bottom: 1px solid var(--line);
+  }
+  .compare-header:first-child { display: none; }
+  .compare-label {
+    background: var(--ink);
+    color: var(--bg);
+  }
+  .flow-section { padding: 64px 0; margin: 80px 0; }
+  .flow-section::before { font-size: 110px; }
+  .flow-branch { grid-template-columns: 1fr; }
+  .timeline-row { grid-template-columns: 1fr; gap: 4px; }
+  .timeline-when { margin-bottom: 8px; }
+  .footer-grid { grid-template-columns: 1fr; }
+  .footer-bottom { font-size: 10px; }
+}
+
+/* ============ ANIMATIONS ============ */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.hero-eyebrow { animation: fadeUp 0.8s ease both; }
+.hero-title { animation: fadeUp 0.8s 0.1s ease both; }
+.hero-subtitle { animation: fadeUp 0.8s 0.2s ease both; }
+.hero-meta { animation: fadeUp 0.8s 0.3s ease both; }
+
+/* Selection */
+::selection {
+  background: var(--accent);
+  color: var(--bg);
+}
+
+/* Smooth in-text emphasis */
+.term {
+  font-family: "Fraunces", serif;
+  font-style: italic;
+  font-weight: 500;
+  color: var(--accent);
+}
+
+.term-cn {
+  border-bottom: 1.5px solid var(--accent);
+  padding-bottom: 1px;
+  color: var(--accent);
+  font-weight: 500;
+}
+
+</style>
+</head>
+<body>
+
+<!-- ============ MASTHEAD ============ -->
+<div class="container-wide">
+  <div class="masthead">
+    <div class="masthead-top">
+      <span>生育医学 · Reproductive Medicine</span>
+      <span>● Issue 01</span>
+      <span>2026</span>
+    </div>
+  </div>
+</div>
+
+<!-- ============ HERO ============ -->
+<div class="container">
+  <section class="hero">
+    <div class="hero-eyebrow">A Guide to Genetic Testing in IVF</div>
+    <h1 class="hero-title">
+      <span class="initials">ECS</span><span class="times">×</span><span class="initials">PGT-A</span><span class="times">×</span><span class="initials">PGT-M</span>
+    </h1>
+    <p class="hero-subtitle">
+      从备孕到胚胎移植，三种生育基因检测的分工、串联与决策逻辑——一份面向准父母的完整流程说明。
+    </p>
+    <div class="hero-meta">
+      <span>阅读时间 12 分钟</span>
+      <span>适用人群 备孕 / IVF 患者</span>
+      <span>更新于 2026 年 4 月</span>
+    </div>
+  </section>
+</div>
+
+<!-- ============ TL;DR ============ -->
+<section class="tldr">
+  <div class="container">
+    <div class="tldr-label">▼ 核心要点</div>
+    <p class="tldr-body">
+      <strong>ECS</strong> 测的是<strong>父母</strong>，看你和伴侣会不会把同一种隐性遗传病传给孩子；
+      <strong>PGT-A</strong> 测的是<strong>胚胎的染色体数目</strong>（唐氏综合征等），是 IVF 里的标配；
+      <strong>PGT-M</strong> 测的是<strong>胚胎的特定单基因</strong>，只有在 ECS 发现夫妇共同携带时才需要加做。
+      三者分别对应<strong>造胚胎前、胚胎阶段、胚胎阶段（定制化）</strong>三个环节。
+    </p>
+  </div>
+</section>
+
+<!-- ============ SECTION 01: 三者并列对比 ============ -->
+<div class="container">
+  <section class="section">
+    <div class="section-number">§ 01 — 三者的一眼对比</div>
+    <h2 class="section-title">分工不同，目的各异<span class="en">Side by Side</span></h2>
+    <p class="section-lead">
+      把三个检测放在一张表里最快看清：它们并不是可替换关系，而是一条流水线上的不同工位。
+    </p>
+
+    <div class="compare-wrap">
+      <div class="compare-grid">
+        <div class="compare-header"></div>
+        <div class="compare-header ecs">ECS</div>
+        <div class="compare-header pgta">PGT-A</div>
+        <div class="compare-header pgtm">PGT-M</div>
+
+        <div class="compare-label">测谁</div>
+        <div>父母（你和伴侣）</div>
+        <div>胚胎</div>
+        <div>胚胎</div>
+
+        <div class="compare-label">测什么</div>
+        <div>单基因隐性病的<br>携带状态</div>
+        <div>染色体数目<br>（23 对 46 条）</div>
+        <div>特定单基因位点</div>
+
+        <div class="compare-label">何时做</div>
+        <div>造胚胎之前<br>（备孕阶段）</div>
+        <div>IVF 周期中<br>囊胚活检后</div>
+        <div>IVF 周期中<br>囊胚活检后</div>
+
+        <div class="compare-label">样本</div>
+        <div>父母血液 / 唾液</div>
+        <div>囊胚滋养层细胞</div>
+        <div>囊胚滋养层细胞</div>
+
+        <div class="compare-label">回答什么</div>
+        <div>会不会把病传下去？</div>
+        <div>胚胎染色体正常吗？</div>
+        <div>胚胎有没有带那个病？</div>
+
+        <div class="compare-label">是否默认做</div>
+        <div>推荐所有备孕夫妇</div>
+        <div>RMA 对所有 IVF 推荐</div>
+        <div>仅当 ECS 阳性才加做</div>
+
+        <div class="compare-label">技术</div>
+        <div>NGS 二代测序<br>+ Fragile X 专测<br>+ SMA 拷贝数</div>
+        <div>NGS 全基因组<br>浅深度测序</div>
+        <div>定制引物<br>针对特定位点</div>
+      </div>
+    </div>
+
+    <p>
+      一句话总结：<strong>ECS 是输入</strong>（给父母打标签），<strong>PGT-A 是普筛</strong>（看胚胎硬件），<strong>PGT-M 是定制化深查</strong>（看胚胎有没有遗传到已知的家族炸弹）。
+    </p>
+  </section>
+</div>
+
+<!-- ============ SECTION 02: ECS 详解 ============ -->
+<div class="container">
+  <section class="section">
+    <div class="section-number">§ 02 — 备孕阶段</div>
+    <h2 class="section-title">扩展性携带者筛查<span class="en">Expanded Carrier Screening</span></h2>
+
+    <div class="concept-card">
+      <div class="concept-card-header">
+        <div class="concept-abbrev">ECS</div>
+        <div class="concept-meta">
+          <div>▸ 阶段｜备孕</div>
+          <div>▸ 对象｜父母</div>
+          <div>▸ 样本｜血 / 唾液</div>
+        </div>
+      </div>
+
+      <div class="concept-full">
+        扩展性携带者筛查
+        <span class="concept-full-en">Expanded Carrier Screening</span>
+      </div>
+
+      <div class="concept-body">
+        <p>
+          每个人身上都带着几个隐性致病基因变异，平均每人携带 <strong>2.8 个</strong>。单独一个携带者不发病、一辈子可能都不知道，但如果你和伴侣刚好<strong>带了同一个基因的变异</strong>，孩子就有 25% 的概率得那个病。ECS 就是在造胚胎之前，用一管血把这件事查清楚。
+        </p>
+        <p>
+          panel 规模直接决定了筛查的覆盖面。目前主流方案：
+        </p>
+
+        <dl class="kv-list">
+          <dt>ACMG 2021 指南推荐（行业基线）</dt>
+          <dd>113 个基因（携带频率 ≥ 1/200）</dd>
+
+          <dt>Labcorp Inheritest 500 PLUS（RMA 合作方使用）</dt>
+          <dd>500+ 基因 / 500+ 种疾病</dd>
+
+          <dt>Natera Horizon（UCSF 等机构使用）</dt>
+          <dd>274 个基因</dd>
+
+          <dt>贝瑞基因 携心安标准版（国内主流）</dt>
+          <dd>129 基因 / 153 种疾病（基于中国人群携带率调整）</dd>
+        </dl>
+
+        <p>
+          美国大型 panel 平均能发现 <strong>80% 左右</strong>的受检者为至少一种疾病的携带者。只有当你和伴侣<strong>碰到同一种病</strong>时，才需要后续的应对——这才是下一步 PGT-M 的入口。
+        </p>
+        <p>
+          技术上有几个要点值得单独说。SMA（脊髓性肌萎缩症）在标准 NGS 上因为 SMN2 假基因干扰很难准确检测，好的 panel 会用增强 SNP 分析识别 silent (2+0) 携带者；Fragile X 是 CGG 三联体重复扩增，必须用专门的 RP-PCR 才能测；α 地贫是大片段缺失，需要 CNV 分析或 gap-PCR。选 panel 时，这三件事是否被覆盖决定了筛查的"底线质量"。
+        </p>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- ============ SECTION 03: PGT-A 详解 ============ -->
+<div class="container">
+  <section class="section">
+    <div class="section-number">§ 03 — 胚胎阶段 · 普筛</div>
+    <h2 class="section-title">胚胎染色体筛查<span class="en">Preimplantation Genetic Testing for Aneuploidy</span></h2>
+
+    <div class="concept-card pgta">
+      <div class="concept-card-header">
+        <div class="concept-abbrev">PGT-A</div>
+        <div class="concept-meta">
+          <div>▸ 阶段｜IVF 周期内</div>
+          <div>▸ 对象｜胚胎</div>
+          <div>▸ 样本｜囊胚活检</div>
+        </div>
+      </div>
+
+      <div class="concept-full">
+        胚胎植入前非整倍体筛查
+        <span class="concept-full-en">Preimplantation Genetic Testing for Aneuploidy</span>
+      </div>
+
+      <div class="concept-body">
+        <p>
+          人类正常有 23 对染色体共 46 条。染色体数量出错（多一条、少一条）叫<strong>非整倍体</strong>（aneuploidy），是流产和先天综合征的头号元凶：21 号多一条是唐氏综合征，18 号多一条是爱德华综合征，性染色体异常对应 Turner、Klinefelter 等。
+        </p>
+        <p>
+          PGT-A 的任务就一件事：<strong>数数染色体</strong>，看哪个胚胎 46 条齐整。技术上胚胎培养到第 5-6 天形成囊胚后，从未来会发育成胎盘的<strong>滋养层</strong>取 5-10 个细胞做活检（不影响胚胎本体），用 NGS 浅深度测序拉取整个基因组的覆盖度信息，通过各染色体的 reads 数量推断拷贝数。
+        </p>
+        <p>
+          RMA 对所有 IVF 患者默认推荐 PGT-A，<strong>和你是不是携带者无关</strong>。原因很直接：非整倍体胚胎移植后，要么着床失败，要么早期流产，要么生出有严重问题的孩子。花几百美元筛一下比浪费一个移植周期划算太多。
+        </p>
+        <p>
+          重要提醒：PGT-A 只看"染色体数对不对"，<strong>不看基因序列</strong>。一个 PGT-A 正常的胚胎仍然可能带着父母遗传下来的单基因病——那是 PGT-M 的领域。
+        </p>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- ============ SECTION 04: PGT-M 详解 ============ -->
+<div class="container">
+  <section class="section">
+    <div class="section-number">§ 04 — 胚胎阶段 · 定制化深查</div>
+    <h2 class="section-title">胚胎单基因病筛查<span class="en">Preimplantation Genetic Testing for Monogenic Disorders</span></h2>
+
+    <div class="concept-card pgtm">
+      <div class="concept-card-header">
+        <div class="concept-abbrev">PGT-M</div>
+        <div class="concept-meta">
+          <div>▸ 阶段｜IVF 周期内</div>
+          <div>▸ 对象｜胚胎</div>
+          <div>▸ 样本｜囊胚活检</div>
+        </div>
+      </div>
+
+      <div class="concept-full">
+        胚胎植入前单基因病筛查
+        <span class="concept-full-en">Preimplantation Genetic Testing for Monogenic Disorders</span>
+      </div>
+
+      <div class="concept-body">
+        <p>
+          PGT-M 是 PGT-A 的<strong>定向加强版</strong>，但完全是另一条技术路线。PGT-A 是"普筛"，所有胚胎都测；PGT-M 是"定制款"，<strong>只针对 ECS 发现的那个具体基因的具体变异位点</strong>设计探针。
+        </p>
+        <p>
+          流程上 PGT-M 需要一个额外的前置步骤：<strong>探针定制</strong>。实验室拿到你和伴侣的 ECS 结果（知道双方带的具体变异位置后），针对该位点设计 PCR 引物和连锁分析方案——通常还要测父母和一位家族成员（triangulation），建立单倍型参考。这个设计过程一般要 <strong>4-8 周</strong>，是 IVF 流程里时间敏感的一环。
+        </p>
+        <p>
+          活检用的细胞是同一批（囊胚滋养层），往往 PGT-A 和 PGT-M 是在同一次活检上<strong>并行完成</strong>的：同一批细胞分两路，一路做 PGT-A 染色体普筛，一路做 PGT-M 单基因深查。只有<strong>两项都通过</strong>的胚胎才是最终的候选。
+        </p>
+        <p>
+          注意：PGT-M 只能筛你们<strong>已知</strong>的那个病。它不是"全面筛查单基因病"——想要覆盖所有已知单基因病需要的是胚胎全基因组/外显子测序，但临床验证还不成熟，RMA 明确不推荐：<em>"We do not recommend whole genome sequencing at this time."</em>
+        </p>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- ============ PULL QUOTE ============ -->
+<div class="container">
+  <div class="pullquote">
+    <p class="pullquote-text">
+      ECS 决定"要不要加 PGT-M"。<br>
+      PGT-A 和 PGT-M 决定"哪个胚胎能移植"。
+    </p>
+  </div>
+</div>
+
+<!-- ============ FLOW DIAGRAM ============ -->
+<section class="flow-section">
+  <div class="container">
+    <div class="section-number">§ 05 — 完整流程</div>
+    <h2 class="section-title">从抽血到移植<span class="en">The Complete Workflow</span></h2>
+    <p class="section-lead">
+      把三个检测放回真实的时间线里，每一步都依赖上一步的结果。
+    </p>
+
+    <div class="flow-container">
+
+      <!-- PHASE 1 -->
+      <div class="phase-label">PHASE Ⅰ · 备孕期</div>
+
+      <div class="flow-node">
+        <div class="flow-node-num">01</div>
+        <div class="flow-node-title">夫妇双方采血 / 采唾液<span class="en">Sample Collection</span></div>
+        <div class="flow-node-desc">准父母各提交一份血液或口腔拭子样本。异地时可寄送采样盒，Ruoyan 在国内、你在美国也能做。</div>
+      </div>
+      <div class="flow-arrow">▼</div>
+
+      <div class="flow-node primary">
+        <div class="flow-node-num">02 · 关键决策点</div>
+        <div class="flow-node-title">ECS 扩展性携带者筛查<span class="en">Expanded Carrier Screening</span></div>
+        <div class="flow-node-desc">500+ 基因 panel（若用 Labcorp Inheritest 500 PLUS）。出报告 3-4 周 + 遗传咨询 1-2 周，共 <strong>约 5-6 周</strong>。</div>
+      </div>
+      <div class="flow-arrow">▼</div>
+
+      <div class="flow-branch">
+        <div>
+          <div class="flow-branch-label">情形 A｜ECS 阴性</div>
+          <div class="flow-node">
+            <div class="flow-node-num">分支 A</div>
+            <div class="flow-node-title">双方不共同携带</div>
+            <div class="flow-node-desc">无需 PGT-M。后续仅做 PGT-A 普筛即可。直接进入 IVF 周期。</div>
+          </div>
+        </div>
+        <div>
+          <div class="flow-branch-label">情形 B｜ECS 阳性</div>
+          <div class="flow-node">
+            <div class="flow-node-num">分支 B</div>
+            <div class="flow-node-title">双方共同携带同病</div>
+            <div class="flow-node-desc">遗传咨询→决定是否做 PGT-M。启动探针定制（需 4-8 周），与 IVF 周期并行准备。</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="flow-merge">两条路径合并进入 IVF 周期</div>
+
+      <!-- PHASE 2 -->
+      <div class="phase-label">PHASE Ⅱ · IVF 周期</div>
+
+      <div class="flow-node">
+        <div class="flow-node-num">03</div>
+        <div class="flow-node-title">促排卵 + 取卵<span class="en">Stimulation & Retrieval</span></div>
+        <div class="flow-node-desc">女方打促排针约 10-14 天，监测卵泡生长，成熟后手术取卵。这一步<strong>必须在 IVF 诊所现场完成</strong>，需要美国在场时间。</div>
+      </div>
+      <div class="flow-arrow">▼</div>
+
+      <div class="flow-node">
+        <div class="flow-node-num">04</div>
+        <div class="flow-node-title">体外受精 + 胚胎培养<span class="en">Fertilization & Culture</span></div>
+        <div class="flow-node-desc">取到的卵子与精子在实验室结合形成受精卵，培养 5-6 天发育成囊胚（blastocyst）。</div>
+      </div>
+      <div class="flow-arrow">▼</div>
+
+      <div class="flow-node">
+        <div class="flow-node-num">05</div>
+        <div class="flow-node-title">囊胚活检<span class="en">Trophectoderm Biopsy</span></div>
+        <div class="flow-node-desc">从囊胚的滋养层（未来的胎盘部分）取 5-10 个细胞，不影响未来胎儿本体。同一批细胞分两路送检。</div>
+      </div>
+      <div class="flow-arrow">▼</div>
+
+      <div class="flow-branch">
+        <div>
+          <div class="flow-node primary">
+            <div class="flow-node-num">06A · 所有胚胎</div>
+            <div class="flow-node-title">PGT-A<span class="en">Aneuploidy Screening</span></div>
+            <div class="flow-node-desc">数染色体。筛掉 21/18/13 三体、性染色体异常等非整倍体胚胎。</div>
+          </div>
+        </div>
+        <div>
+          <div class="flow-node primary">
+            <div class="flow-node-num">06B · 仅 ECS 阳性组</div>
+            <div class="flow-node-title">PGT-M<span class="en">Monogenic Testing</span></div>
+            <div class="flow-node-desc">用定制探针查目标基因位点，筛掉遗传到双致病变异的胚胎。</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="flow-merge">两项结果整合</div>
+
+      <div class="flow-node">
+        <div class="flow-node-num">07</div>
+        <div class="flow-node-title">胚胎分级 + 优选<span class="en">Embryo Selection</span></div>
+        <div class="flow-node-desc">PGT-A 通过 + PGT-M 通过（如适用）的胚胎进入候选池，按形态学分级和基因结果综合排序。</div>
+      </div>
+      <div class="flow-arrow">▼</div>
+
+      <!-- PHASE 3 -->
+      <div class="phase-label">PHASE Ⅲ · 移植</div>
+
+      <div class="flow-node">
+        <div class="flow-node-num">08</div>
+        <div class="flow-node-title">冻胚移植<span class="en">Frozen Embryo Transfer</span></div>
+        <div class="flow-node-desc">PGT 检测周期通常选择冻胚移植（FET）——因为检测需要 1-2 周出结果，新鲜胚胎等不了。女方经过内膜准备后，解冻胚胎植入子宫。</div>
+      </div>
+      <div class="flow-arrow">▼</div>
+
+      <div class="flow-node">
+        <div class="flow-node-num">09</div>
+        <div class="flow-node-title">妊娠确认 + 产前监测<span class="en">Pregnancy & Prenatal Care</span></div>
+        <div class="flow-node-desc">移植后约 10-14 天验血确认。PGT 结果不能 100% 排除所有问题，后续 NIPT、早中孕期筛查、羊水穿刺（如指征）仍按常规执行。</div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ============ TIMELINE ============ -->
+<div class="container">
+  <section class="section">
+    <div class="section-number">§ 06 — 时间轴参考</div>
+    <h2 class="section-title">整个流程要多久？<span class="en">Timeline</span></h2>
+    <p class="section-lead">
+      以一个典型的海外 IVF + 国内伴侣 + PGT 的案例为参考（ECS 阳性情形，PGT-A + PGT-M 双测）。实际周期因人因诊所差异很大。
+    </p>
+
+    <div class="timeline">
+      <div class="timeline-row">
+        <div class="timeline-when">Week 0<span>起点</span></div>
+        <div class="timeline-what">
+          <strong>首次咨询 + ECS 采样</strong>
+          预约生殖内分泌医生初诊，开 ECS 检测单。可邮寄采样盒异地同步采样。
+        </div>
+      </div>
+
+      <div class="timeline-row">
+        <div class="timeline-when">Week 3–4<span>ECS 结果</span></div>
+        <div class="timeline-what">
+          <strong>ECS 报告出炉</strong>
+          若双方均阴性，直接进入 IVF 准备；若阳性，启动遗传咨询 + PGT-M 探针定制（另加 4-8 周）。
+        </div>
+      </div>
+
+      <div class="timeline-row">
+        <div class="timeline-when">Week 4–6<span>筹备期</span></div>
+        <div class="timeline-what">
+          <strong>IVF 前检查 + 方案制定</strong>
+          基础激素、AMH、超声、感染四项等孕前全套检查；医生制定促排方案、确定启动月经周期。
+        </div>
+      </div>
+
+      <div class="timeline-row">
+        <div class="timeline-when">Week 6–8<span>促排 + 取卵</span></div>
+        <div class="timeline-what">
+          <strong>IVF 周期启动</strong>
+          月经第 2-3 天开始打促排针，10-14 天监测卵泡，触发后 36 小时取卵。女方此期间必须在美国。
+        </div>
+      </div>
+
+      <div class="timeline-row">
+        <div class="timeline-when">Week 8–9<span>胚胎培养</span></div>
+        <div class="timeline-what">
+          <strong>受精 + 囊胚培养 + 活检</strong>
+          取卵当天受精，第 5-6 天发育到囊胚后活检取样，立即冷冻胚胎（全胚冷冻）。
+        </div>
+      </div>
+
+      <div class="timeline-row">
+        <div class="timeline-when">Week 9–11<span>PGT 检测</span></div>
+        <div class="timeline-what">
+          <strong>PGT-A / PGT-M 报告</strong>
+          活检样本送检实验室，1-2 周内出结果。PGT-M 报告通常比 PGT-A 稍慢。
+        </div>
+      </div>
+
+      <div class="timeline-row">
+        <div class="timeline-when">Week 12+<span>移植周期</span></div>
+        <div class="timeline-what">
+          <strong>冻胚移植周期</strong>
+          通常跳过取卵当月直接移植，而是下个月经周期内膜准备后移植。女方需再次赴美 1-2 周。
+        </div>
+      </div>
+
+      <div class="timeline-row">
+        <div class="timeline-when">Week 14–16<span>验孕</span></div>
+        <div class="timeline-what">
+          <strong>确认妊娠</strong>
+          移植后 10-14 天验血 hCG。确认后 6-8 周首次产检超声。
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- ============ FAQ ============ -->
+<div class="container">
+  <section class="section">
+    <div class="section-number">§ 07 — 常见疑问</div>
+    <h2 class="section-title">准父母最常问的<span class="en">FAQ</span></h2>
+
+    <div class="faq-item">
+      <div class="faq-q">ECS 阴性还要做 PGT-A 吗？</div>
+      <div class="faq-a">
+        要。<strong>ECS 和 PGT-A 查的是完全不同的东西</strong>——ECS 看父母会不会遗传单基因病，PGT-A 看胚胎染色体数目对不对。ECS 阴性只是说你们不共同携带某个隐性病基因，并不代表胚胎在形成过程中不会发生染色体错误（非整倍体）。后者和父母基因状态无关，和卵子/精子减数分裂过程中的随机错误有关，年龄越大概率越高。
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q">能直接跳过 ECS 只做 PGT-M 吗？</div>
+      <div class="faq-a">
+        不能。<strong>PGT-M 是定制化的</strong>，实验室需要知道"查哪个基因的哪个具体变异"才能设计探针。ECS（或其他方式发现的家族史）是 PGT-M 的<strong>输入</strong>。没有 ECS 结果，PGT-M 无从设计。
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q">PGT-M 能查所有的单基因病吗？</div>
+      <div class="faq-a">
+        不能。PGT-M <strong>只能查你们已知的那个（些）病</strong>。它不是广谱筛查工具。想要覆盖所有已知单基因病的全面筛查，需要对胚胎做全外显子或全基因组测序（WES/WGS），但这类技术目前临床验证不成熟、意义不明变异（VUS）太多，RMA 等主流诊所明确不推荐。
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q">夫妻分开在两个国家做 ECS 行不行？</div>
+      <div class="faq-a">
+        技术上可以，但<strong>实操上不建议</strong>。原因：不同实验室的 panel 基因列表可能不完全重叠，变异命名标准（HGVS 版本）也可能有差异，要判断"是否同一病携带者"时数据对不上就麻烦了。更稳妥的做法：两人用<strong>同一家实验室的同一个 panel</strong>，要么都用美国的（Labcorp/Natera 等），要么都用国内的（贝瑞/华大等）。如果最终 IVF 在美国做，用美方实验室最省事——RMA 直接认报告、后续 PGT-M 也是同一体系。
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q">PGT 活检会伤害胚胎吗？</div>
+      <div class="faq-a">
+        现代技术下风险很低。活检的 5-10 个细胞来自<strong>滋养层</strong>（trophectoderm），这部分未来发育成胎盘，而不是胎儿本体（内细胞团）。长期随访数据显示经 PGT 的胚胎移植后，出生儿童的健康指标与未经 PGT 的胚胎相似。但任何有创操作都有微小概率影响胚胎发育潜力，这也是为什么 PGT 不是强制项目。
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q">PGT-A 正常还会流产吗？</div>
+      <div class="faq-a">
+        会，但概率大幅降低。<strong>PGT-A 通过的胚胎移植后流产率约 5-10%</strong>（未经 PGT-A 的胚胎流产率可达 20-30%，高龄更高）。剩余流产风险来自 PGT-A 覆盖不到的因素：嵌合体（mosaicism，一个胚胎里同时有正常和异常细胞）、子宫内膜问题、免疫因素、感染等。
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q">做了 PGT 还需要做产前诊断（NIPT、羊穿）吗？</div>
+      <div class="faq-a">
+        需要。PGT 是<strong>移植前</strong>的筛查，不能 100% 排除妊娠过程中新发的问题，也无法替代孕期标准监测。主流指南建议：PGT 正常的妊娠仍应常规 NIPT（无创产前筛查）、孕早中期唐筛、必要时羊水穿刺。把 PGT 看作"额外一层保护"而不是"替代方案"。
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q">RMA 说 WGS 不推荐是什么意思？</div>
+      <div class="faq-a">
+        Christine 那句 "We do not recommend whole genome sequencing at this time" 指的是<strong>对胚胎做全基因组测序</strong>。目前一些诊所推销"超全面 PGT"概念，给每个胚胎做 WGS，号称能发现所有遗传风险。但实际临床效果争议很大：会产生大量 VUS（意义不明变异），还会发现很多成人发病的疾病风险（如癌症易感基因），对一个尚未出生的胚胎做这种筛查的伦理和实用价值都存疑。RMA 的立场是主流共识。
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- ============ FOOTER ============ -->
+<div class="container">
+  <footer class="footer">
+    <div class="footer-grid">
+      <div>
+        <h4>Disclaimer · 免责声明</h4>
+        <p class="footer-disclaimer">
+          本文档为个人学习笔记整理，仅供信息参考，<strong>不构成医疗建议</strong>。所有检测方案、时间安排、panel 选择请以你就诊医生和遗传咨询师的专业意见为准。不同诊所、不同保险覆盖、不同家族史情况下的具体方案差异很大。
+        </p>
+      </div>
+      <div>
+        <h4>Sources</h4>
+        <div>ACMG 2021<br>ACOG Committee Opinion 691<br>RCOG SIP 74 (2024)<br>NSGC Practice Guidelines</div>
+      </div>
+      <div>
+        <h4>Labs Referenced</h4>
+        <div>Labcorp Inheritest<br>Natera Horizon<br>Myriad Foresight<br>贝瑞基因 携心安</div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2026 · Personal Notes</span>
+      <span>Last updated · April 2026</span>
+      <span>● Not medical advice</span>
+    </div>
+  </footer>
+</div>
+
+</body>
+</html>
